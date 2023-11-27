@@ -5,7 +5,7 @@ import string
 import concurrent.futures
 
 MIN_PASSWORD_LENGTH = 1
-MAX_PASSWORD_LENGTH = 16
+MAX_PASSWORD_LENGTH = 8
 
 
 def intro_message():
@@ -102,7 +102,7 @@ def generate_passwords(character_sets, min_length, max_length):
             yield "".join(password)
 
 
-def brute_force_worker(file_path, character_sets, min_length, max_length, password):
+def brute_force_worker(file_path, password):
     try:
         patoolib.test_archive(file_path, password=password, verbosity=-1)
         print(f"SUCCESS! The password was found to be: {password}")
@@ -113,7 +113,7 @@ def brute_force_worker(file_path, character_sets, min_length, max_length, passwo
 
 def brute_force(file_path, character_sets, min_length, max_length):
     print("===============================")
-    print("Starting brute-force...")
+    print("Brute-forcing...")
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = []
         for character_set in character_sets:
@@ -124,9 +124,6 @@ def brute_force(file_path, character_sets, min_length, max_length):
                         executor.submit(
                             brute_force_worker,
                             file_path,
-                            character_sets,
-                            min_length,
-                            max_length,
                             password,
                         )
                     )
