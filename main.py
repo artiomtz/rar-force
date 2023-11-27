@@ -2,6 +2,7 @@ import rarfile
 import patoolib
 import itertools
 import string
+import concurrent.futures
 
 MIN_PASSWORD_LENGTH = 1
 MAX_PASSWORD_LENGTH = 16
@@ -101,21 +102,40 @@ def generate_passwords(character_sets, min_length, max_length):
             yield "".join(password)
 
 
+def brute_force_worker(file_path, character_sets, min_length, max_length, password):
+    try:
+        patoolib.test_archive(file_path, password=password, verbosity=-1)
+        print(f"SUCCESS! The password was found to be: {password}")
+        return password
+    except Exception:
+        return None
+
+
 def brute_force(file_path, character_sets, min_length, max_length):
     print("===============================")
     print("Starting brute-force...")
-    print("===============================")
-    for character_set in character_sets:
-        if character_sets[character_set]:
-            passwords = generate_passwords(character_sets, min_length, max_length)
-            for password in passwords:
-                # print(f"Attempting: {password}")
-                try:
-                    patoolib.test_archive(file_path, password=password, verbosity=-1)
-                    print(f"SUCCESS! The password was found to be: {password}")
-                    return
-                except Exception:
-                    pass
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = []
+        for character_set in character_sets:
+            if character_sets[character_set]:
+                passwords = generate_passwords(character_sets, min_length, max_length)
+                for password in passwords:
+                    futures.append(
+                        executor.submit(
+                            brute_force_worker,
+                            file_path,
+                            character_sets,
+                            min_length,
+                            max_length,
+                            password,
+                        )
+                    )
+
+        for future in concurrent.futures.as_completed(futures):
+            result = future.result()
+            if result:
+                return result
+
     print("Brute-force unsuccessful. Password not found.")
 
 
