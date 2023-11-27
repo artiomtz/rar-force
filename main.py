@@ -107,16 +107,15 @@ def brute_force(file_path, character_sets, min_length, max_length):
     print("===============================")
     for character_set in character_sets:
         if character_sets[character_set]:
-            print(f"Checking {character_set} characters...")
             passwords = generate_passwords(character_sets, min_length, max_length)
             for password in passwords:
+                # print(f"Attempting: {password}")
                 try:
                     patoolib.test_archive(file_path, password=password, verbosity=-1)
                     print(f"SUCCESS! The password was found to be: {password}")
                     return
                 except Exception:
                     pass
-            print(f"Completed check for {character_set} characters.")
     print("Brute-force unsuccessful. Password not found.")
 
 
