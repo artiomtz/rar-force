@@ -1,4 +1,5 @@
 import rarfile
+import patoolib
 import itertools
 import string
 
@@ -104,26 +105,18 @@ def brute_force(file_path, character_sets, min_length, max_length):
     print("===============================")
     print("Starting brute-force...")
     print("===============================")
-    with rarfile.RarFile(file_path, "r") as rf:
-        for character_set in character_sets:
-            if character_sets[character_set]:
-                print(f"Checking {character_set} characters...")
-                passwords = generate_passwords(character_sets, min_length, max_length)
-                for password in passwords:
-                    try:
-                        rf.extractall(
-                            pwd=password.encode("utf-8"),
-                        )
-                        print(f"SUCCESS! The password was found to be: {password}")
-                        rf.close()
-                        return
-                    except rarfile.RarWrongPassword:
-                        pass
-                    except Exception as e:
-                        print(f"An error occurred while trying to open the file: {e}")
-                        rf.close()
-                        return
-                print(f"Completed check for {character_set} characters.")
+    for character_set in character_sets:
+        if character_sets[character_set]:
+            print(f"Checking {character_set} characters...")
+            passwords = generate_passwords(character_sets, min_length, max_length)
+            for password in passwords:
+                try:
+                    patoolib.test_archive(file_path, password=password, verbosity=-1)
+                    print(f"SUCCESS! The password was found to be: {password}")
+                    return
+                except Exception:
+                    pass
+            print(f"Completed check for {character_set} characters.")
     print("Brute-force unsuccessful. Password not found.")
 
 
