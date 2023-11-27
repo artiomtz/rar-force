@@ -1,0 +1,3 @@
+patool==2.0.0
+rarfile==4.1
+unrar==0.4
